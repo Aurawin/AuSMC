@@ -1,10 +1,12 @@
 package com.aurawin.scs.smc.views;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class viewDomain {
+public class viewDomain{
     private JComboBox cbDomains;
-    private JTextField textField1;
+    private JTextField txtFriendlyName;
     private JLabel lblDomain;
     private JButton btnNewDomain;
     private JTabbedPane tpMain;
@@ -29,4 +31,25 @@ public class viewDomain {
     private JButton btnCertImport;
     private JButton btnLoad;
     private JComboBox cbCertLoad;
+    private JPanel tabKeywords;
+    private JPanel pnlKeywordTools;
+    private JButton btnKeywordAdd;
+    private JButton btnKeywordDelete;
+    private JTextField txtKeywordName;
+    private JLabel lblKeywordName;
+    public JPanel mainPanel;
+    private JList listKeywordKeywords;
+    private JPanel pnlKeywordClient;
+    private JTextArea txtKeywordValue;
+    private JScrollPane spTextKeywordValue;
+    private JPanel tabAccounts;
+
+    public viewDomain() {
+        btnKeywordAdd.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+    }
 }
