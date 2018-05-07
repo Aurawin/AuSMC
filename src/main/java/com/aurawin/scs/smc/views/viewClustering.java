@@ -3,14 +3,15 @@ package com.aurawin.scs.smc.views;
 import com.aurawin.core.gui.JTextFieldListener;
 import com.aurawin.scs.smc.Controller;
 import com.aurawin.scs.smc.JTableHelper;
-import com.aurawin.scs.smc.models.ClusterTimer;
-import com.aurawin.scs.smc.models.ClusterTreeModel;
-import com.aurawin.scs.smc.models.ServiceModel;
-import com.aurawin.scs.smc.models.ServiceTableModel;
+import com.aurawin.scs.smc.controllers.ClusterTimer;
+import com.aurawin.scs.smc.controllers.DialogCompletion;
+import com.aurawin.scs.smc.controllers.OnDialogCompletion;
+import com.aurawin.scs.smc.models.*;
 import com.aurawin.scs.stored.Entities;
 import com.aurawin.scs.stored.cloud.*;
 import com.aurawin.scs.stored.domain.Domain;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -38,7 +39,7 @@ public class viewClustering {
     private JComboBox cbDomainAllocation;
     private JButton btnDomainAllocate;
     private JButton btnDomainRelease;
-    public JTree tvClusters;
+    public JList tvClusters;
     public JPanel mainPanel;
     private JPanel pnlNode;
     private JPanel tabNode;
@@ -84,24 +85,39 @@ public class viewClustering {
     private JCheckBox cbServiceEnabled;
     private JSlider sldServiceScale;
     private JTable tblServices;
-    private JPanel pnlScroller;
-    private JScrollPane spServices;
     private JTextField txtMountPoint;
     private JPanel pnlMountPoint;
+    private JTable tblCluster;
+    private JTable tblResources;
+    private JPanel tabServices;
+    private JPanel pnlScroller;
+    private JScrollPane spServices;
+    private JTable tblNodes;
 
     protected ArrayList<Group> Clusters;
 
-    public static ClusterTreeModel tvClusterModel;
+    public static ClusterTableModel gTableModel;
     public static ServiceTableModel svcTableModel;
+    public static ResourceTableModel rTableModel;
+    public static NodeTableModel nTableModel;
+
+    private boolean navigationExpanded;
 
     private DefaultTableCellRenderer svcTableRenderer;
+    private DefaultTableCellRenderer gTableRenderer;
+    private DefaultTableCellRenderer rTableRenderer;
+    private DefaultTableCellRenderer nTableRenderer;
 
     public viewClustering() {
+        navigationExpanded=true;
 
         ServiceModel.init();
-
+        gTableRenderer = new DefaultTableCellRenderer();
         svcTableRenderer = new DefaultTableCellRenderer();
-        svcTableModel = new ServiceTableModel();
+        svcTableModel = new ServiceTableModel(tblServices);
+        gTableModel = new ClusterTableModel();
+        rTableModel = new ResourceTableModel(tblResources);
+        nTableModel = new NodeTableModel(tblNodes);
 
         tblServices.setModel(svcTableModel);
         tblServices.setRowSelectionAllowed(true);
@@ -112,12 +128,67 @@ public class viewClustering {
         JTableHelper.setColumnWidth(tblServices,svcTableRenderer,2,55);
         JTableHelper.setColumnWidth(tblServices,svcTableRenderer,3,140);
 
+        tblCluster.setModel(gTableModel);
+        tblCluster.setRowSelectionAllowed(true);
+        tblCluster.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        tblResources.setModel(rTableModel);
+        tblResources.setRowSelectionAllowed(true);
+        tblResources.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        JTableHelper.setColumnWidth(tblResources,rTableRenderer,0,75);
+
+        tblNodes.setModel(nTableModel);
+        tblNodes.setRowSelectionAllowed(true);
+        tblNodes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        JTableHelper.setColumnWidth(tblNodes,nTableRenderer,0,75);
+
         tblServices.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     int idx = tblServices.getSelectedRow();
                     if (idx!=-1) {
                         setServiceView(svcTableModel.getService(idx));
+                    }
+
+                }
+            }
+
+        });
+
+        tblCluster.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    int idx = tblCluster.getSelectedRow();
+                    if (idx!=-1) {
+                        selectGroup(gTableModel.getCluster(idx),true);
+                    }
+
+                }
+            }
+
+        });
+
+        tblResources.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                int idx = tblResources.getSelectedRow();
+                if (!e.getValueIsAdjusting()) {
+
+                    if (idx!=-1) {
+                        selectResource(rTableModel.getResource(idx),false);
+                    }
+
+                }
+            }
+
+        });
+
+
+        tblNodes.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                int idx =tblNodes.getSelectedRow();
+                if (!e.getValueIsAdjusting()) {
+                    if (idx!=-1) {
+                        selectNode(nTableModel.getNode(idx),false);
                     }
 
                 }
@@ -160,7 +231,9 @@ public class viewClustering {
         tpClustering.setEnabledAt(0,true);
         tpClustering.setEnabledAt(1,false);
         tpClustering.setEnabledAt(2,false);
-        tvClusterModel = new ClusterTreeModel(tvClusters);
+        tpClustering.setEnabledAt(3, false);
+
+
         btnClusterDelete.setEnabled(true);
         btnClusterSave.setEnabled(true);
 
@@ -213,44 +286,49 @@ public class viewClustering {
                 Cluster.setLocation(Location);
                 Entities.Save(Cluster,CascadeOn);
 
-                refreshView();
-
-
+                gTableModel.addCluster(Cluster);
             }
         });
         txtClusterName.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 AutosaveTimer.Enable(ClusterTimer.Mode.cmGroup);
+
             }
         });
         txtClusterRack.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 AutosaveTimer.Enable(ClusterTimer.Mode.cmGroup);
             }
         });
         txtClusterRow.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 AutosaveTimer.Enable(ClusterTimer.Mode.cmGroup);
             }
         });
         txtClusterDescription.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 AutosaveTimer.Enable(ClusterTimer.Mode.cmGroup);
             }
         });
         txtClusterTown.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 AutosaveTimer.Enable(ClusterTimer.Mode.cmGroup);
             }
         });
         txtClusterCity.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 AutosaveTimer.Enable(ClusterTimer.Mode.cmGroup);
             }
         });
@@ -258,36 +336,42 @@ public class viewClustering {
         txtClusterState.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 AutosaveTimer.Enable(ClusterTimer.Mode.cmGroup);
             }
         });
         txtClusterCountry.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 AutosaveTimer.Enable(ClusterTimer.Mode.cmGroup);
             }
         });
         txtClusterPostal.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 AutosaveTimer.Enable(ClusterTimer.Mode.cmGroup);
             }
         });
         txtClusterBuilding.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 AutosaveTimer.Enable(ClusterTimer.Mode.cmGroup);
             }
         });
         txtClusterStreet.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 AutosaveTimer.Enable(ClusterTimer.Mode.cmGroup);
             }
         });
         txtClusterFloor.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 AutosaveTimer.Enable(ClusterTimer.Mode.cmGroup);
             }
         });
@@ -295,6 +379,7 @@ public class viewClustering {
         txtClusterRack.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 AutosaveTimer.Enable(ClusterTimer.Mode.cmGroup);
             }
         });
@@ -302,6 +387,7 @@ public class viewClustering {
         txtClusterRoom.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 AutosaveTimer.Enable(ClusterTimer.Mode.cmGroup);
             }
         });
@@ -309,6 +395,7 @@ public class viewClustering {
         txtResourceName.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 String sName = txtResourceName.getText();
                 boolean enName = ( (Cluster!=null) && (sName!=null) && (sName.length()>0));
                 btnResourceDelete.setEnabled(Resource!=null);
@@ -326,14 +413,21 @@ public class viewClustering {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (Resource!=null){
-                    if (Controller.dialogView.showDialog(
-                            DialogMode.dmConfirmation,
-                            Controller.Lang.Dialog.getString("title.cluster.resource.confirm.delete"),
-                            Controller.Lang.Dialog.getString("message.cluster.resource.confirm.delete")
-                    ) && Controller.dialogView.Confirmed){
-                        Entities.Delete(Resource,CascadeOn);
-                        tvClusterModel.reload();
-                    }
+                    Controller.dialogView.showDialog(
+                            new OnDialogCompletion(){
+                                @Override
+                                public void Complete (DialogCompletion Data){
+                                     if (Data.Confirmed) {
+                                         Entities.Delete(Resource, CascadeOn);
+                                         gTableModel.refreshView();
+                                     }
+                                }
+                            },
+                        DialogMode.dmConfirmation,
+                        Controller.Lang.Dialog.getString("title.cluster.resource.confirm.delete"),
+                        Controller.Lang.Dialog.getString("message.cluster.resource.confirm.delete")
+                    );
+
                 }
 
             }
@@ -347,7 +441,9 @@ public class viewClustering {
 
                 Entities.Save(Resource,CascadeOff);
 
-                tvClusterModel.refreshView();
+                rTableModel.addResource(Resource);
+
+                rTableModel.refreshView(Cluster);
             }
         });
         btnClusterSave.addActionListener(new ActionListener() {
@@ -382,14 +478,21 @@ public class viewClustering {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (Cluster!=null){
-                    if (Controller.dialogView.showDialog(
+                    Controller.dialogView.showDialog(
+                            new OnDialogCompletion(){
+                                @Override
+                                public void Complete (DialogCompletion Data){
+                                    if (Data.Confirmed) {
+                                        gTableModel.deleteCluster(Cluster);
+                                        Entities.Delete(Cluster,CascadeOn);
+
+                                    }
+                                }
+                            },
                             DialogMode.dmConfirmation,
                             Controller.Lang.Dialog.getString("title.cluster.confirm.delete"),
                             Controller.Lang.Dialog.getString("message.cluster.confirm.delete")
-                    ) && Controller.dialogView.Confirmed){
-                        Entities.Delete(Cluster,CascadeOn);
-                        tvClusterModel.reload();
-                    }
+                    );
                 }
             }
         });
@@ -397,6 +500,7 @@ public class viewClustering {
         txtNodeName.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 String sName = txtNodeName.getText();
                 boolean enName = ((sName!=null) && (sName.length()>0));
                 btnNodeRemove.setEnabled(Node!=null);
@@ -413,6 +517,7 @@ public class viewClustering {
         txtNodeAddress.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 String sName = txtNodeName.getText();
                 String sAddr = txtNodeAddress.getText();
                 boolean enAddr = ((sAddr!=null) && (sAddr.length()>0));
@@ -431,6 +536,7 @@ public class viewClustering {
         txtMountPoint.getDocument().addDocumentListener(new JTextFieldListener() {
             @Override
             public void update(DocumentEvent e) {
+                if (Loading) return;
                 if (Service!=null) {
                     Service.setMountPoint(txtMountPoint.getText());
                     svcTableModel.serviceChanged(Service);
@@ -442,14 +548,20 @@ public class viewClustering {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (Node!=null){
-                    if (Controller.dialogView.showDialog(
+                    Controller.dialogView.showDialog(
+                            new OnDialogCompletion(){
+                                @Override
+                                public void Complete (DialogCompletion Data){
+                                    if (Data.Confirmed) {
+                                        Entities.Delete(Node,CascadeOn);
+                                        gTableModel.refreshView();
+                                    }
+                                }
+                            },
                             DialogMode.dmConfirmation,
                             Controller.Lang.Dialog.getString("title.cluster.node.confirm.delete"),
                             Controller.Lang.Dialog.getString("message.cluster.node.confirm.delete")
-                    ) && Controller.dialogView.Confirmed){
-                        Entities.Delete(Node,CascadeOn);
-                        tvClusterModel.reload();
-                    }
+                    );
                 }
             }
         });
@@ -505,55 +617,86 @@ public class viewClustering {
                 }
             }
         });
+        btnChange.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                navigationExpanded = !navigationExpanded;
+                btnClustering.setVisible(navigationExpanded);
+                btnSecurity.setVisible(navigationExpanded);
+                btnDomain.setVisible(navigationExpanded);
+                btnSettings.setVisible(navigationExpanded);
+                try {
+                    btnChange.setIcon(new ImageIcon(ImageIO.read(getClass().getClassLoader().getResourceAsStream((navigationExpanded) ? "icons/arrowhead_left.png" : "icons/arrowhead_right.png"))));
+                } catch (Exception ex){
+
+                }
+            }
+        });
     }
 
 
     public void selectGroup(Group group, boolean switchTab){
-        resetServiceView();
-        tpClustering.setEnabledAt(0,true);
-        tpClustering.setEnabledAt(1,true);
-        tpClustering.setEnabledAt(2,false);
+        if ( (Cluster!=null) &&(Cluster.getId()==group.getId())) return;
+        Loading=true;
+        try {
+            resetNodeView();
+            resetResourceView();
+            resetServiceView();
+            tpClustering.setEnabledAt(0, true);
+            tpClustering.setEnabledAt(1, true);
+            tpClustering.setEnabledAt(2, false);
+            tpClustering.setEnabledAt(3, false);
 
-        btnResourceDelete.setEnabled(false);
+            btnResourceDelete.setEnabled(false);
 
-        Cluster = group;
-        txtClusterName.setText(Cluster.getName());
-        txtClusterRack.setText(Cluster.getRack());
-        txtClusterRow.setText(Cluster.getRow());
-        txtClusterDescription.setText(Cluster.getDescription());
-        txtClusterTown.setText(Cluster.getLocation().getLocality());
-        txtClusterCity.setText(Cluster.getLocation().getArea());
-        txtClusterState.setText(Cluster.getLocation().getRegion());
-        txtClusterCountry.setText(Cluster.getLocation().getCountry());
-        txtClusterPostal.setText(Cluster.getLocation().getZip());
-        txtClusterBuilding.setText(Cluster.getLocation().getBuilding());
-        txtClusterStreet.setText(Cluster.getLocation().getStreet());
-        txtClusterFloor.setText(Cluster.getLocation().getFloor());
-        txtClusterRoom.setText(Cluster.getLocation().getRoom());
+            Cluster = group;
+            txtClusterName.setText(Cluster.getName());
+            txtClusterRack.setText(Cluster.getRack());
+            txtClusterRow.setText(Cluster.getRow());
+            txtClusterDescription.setText(Cluster.getDescription());
+            txtClusterTown.setText(Cluster.getLocation().getLocality());
+            txtClusterCity.setText(Cluster.getLocation().getArea());
+            txtClusterState.setText(Cluster.getLocation().getRegion());
+            txtClusterCountry.setText(Cluster.getLocation().getCountry());
+            txtClusterPostal.setText(Cluster.getLocation().getZip());
+            txtClusterBuilding.setText(Cluster.getLocation().getBuilding());
+            txtClusterStreet.setText(Cluster.getLocation().getStreet());
+            txtClusterFloor.setText(Cluster.getLocation().getFloor());
+            txtClusterRoom.setText(Cluster.getLocation().getRoom());
 
-        btnClusterDelete.setEnabled(true);
-        if (switchTab) tpClustering.setSelectedIndex(0);
+            btnClusterDelete.setEnabled(true);
+
+            rTableModel.refreshView(group);
+
+            if (switchTab) tpClustering.setSelectedIndex(0);
+        } finally{
+            Loading=false;
+        }
 
     }
     public void selectResource(Resource resource, boolean switchTab){
-
+        if ((Resource!=null) && Resource.getId()==resource.getId()) return;
         Resource = resource;
-        if (resource!=null) {
-            selectGroup(Resource.getGroup(), false);
 
-            tpClustering.setEnabledAt(0, true);
-            tpClustering.setEnabledAt(1, true);
-            tpClustering.setEnabledAt(2, true);
+        //selectGroup(Resource.getGroup(), false);
 
-            if (switchTab) tpClustering.setSelectedIndex(1);
+        tpClustering.setEnabledAt(0, true);
+        tpClustering.setEnabledAt(1, true);
+        tpClustering.setEnabledAt(2, true);
+        tpClustering.setEnabledAt(3, false);
 
-            btnResourceDelete.setEnabled(true);
-            btnResourceSave.setEnabled(true);
+        if (switchTab) tpClustering.setSelectedIndex(1);
+
+        btnResourceDelete.setEnabled(true);
+        btnResourceSave.setEnabled(true);
 
 
-            txtResourceName.setText(Resource.getName());
-            Resource=resource;
-        }
+        txtResourceName.setText(Resource.getName());
+        Resource=resource;
+
+        rTableModel.refreshView(resource.getGroup());
+        nTableModel.refreshView(resource);
+
         selectNode(null,false);
     }
     public void selectNode(Node node, boolean switchTab){
@@ -567,6 +710,8 @@ public class viewClustering {
             tpClustering.setEnabledAt(0,true);
             tpClustering.setEnabledAt(1,true);
             tpClustering.setEnabledAt(2,true);
+            tpClustering.setEnabledAt(3, true);
+
             if (switchTab) tpClustering.setSelectedIndex(2);
 
             btnNodeNew.setEnabled(true);
@@ -585,9 +730,7 @@ public class viewClustering {
 
             txtNodeName.setText(node.getName());
             txtNodeAddress.setText(com.aurawin.core.rsr.IpHelper.fromLong(node.getIP()));
-
-
-            svcTableModel.load(node);
+            svcTableModel.refreshView(node);
 
             Node = node;
 
@@ -611,8 +754,8 @@ public class viewClustering {
             cbDomainAllocation.addItem(d);
         }
 
-        tvClusterModel.refreshView();
-        tvClusters.setModel(tvClusterModel);
+        gTableModel.refreshView();
+
         int size = Controller.Configuration.getClusteringSplitterSize();
         if (size <120) size = 120;
         spClustering.setDividerLocation(size);
@@ -636,7 +779,7 @@ public class viewClustering {
 
             Entities.Update(Cluster,CascadeOn);
 
-            tvClusterModel.reload();
+            //gTableModel.refreshView();
         }
     }
     public void setServiceView(Service svc){
@@ -653,6 +796,16 @@ public class viewClustering {
             Loading=false;
         }
     }
+    public void resetNodeView(){
+        txtNodeName.setText("");
+        txtNodeAddress.setText("");
+
+    }
+    public void resetResourceView(){
+
+        txtResourceName.setText("");
+
+    }
     public void resetServiceView(){
         svcTableModel.Clear();
         Service = null;
@@ -666,8 +819,8 @@ public class viewClustering {
     public void saveResource(){
         if (Resource!=null){
             Resource.setName(txtResourceName.getText());
-            Entities.Update(Resource,CascadeOn);
-            tvClusterModel.reload();
+            btnResourceAdd.setEnabled(false);
+            rTableModel.ResourceChanged(Resource);
         }
     }
     public void createNode(){
@@ -676,8 +829,8 @@ public class viewClustering {
         Node.setName(txtNodeName.getText());
         Node.setIP(com.aurawin.core.rsr.IpHelper.toLong(txtNodeAddress.getText()));
         Entities.Save(Node,CascadeOn);
-        Resource.Nodes.add(Node);
-        tvClusterModel.reload();
+        nTableModel.addNode(Node);
+        svcTableModel.refreshView(Node);
 
 
     }
@@ -686,7 +839,6 @@ public class viewClustering {
             Node.setName(txtNodeName.getText());
             Node.setIP(com.aurawin.core.rsr.IpHelper.toLong(txtNodeAddress.getText()));
             Entities.Update(Node,CascadeOn);
-            tvClusterModel.reload();
         }
     }
 }

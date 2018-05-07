@@ -1,16 +1,49 @@
 package com.aurawin.scs.smc.models;
 
+import com.aurawin.scs.smc.JTableHelper;
+import com.aurawin.scs.stored.Entities;
+import com.aurawin.scs.stored.domain.Domain;
 import com.aurawin.scs.stored.domain.user.Account;
 
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UsersTableModel extends AbstractTableModel {
+    protected static JTable Owner;
+    protected static Domain Domain;
+    protected DefaultTableCellRenderer tableRenderer;
+
     public static ArrayList<Account> Accounts = new ArrayList<>();
 
 
-    private String[] columnHeadings = {"UserId","Username" ,"First Name", "Last Name", "Phone", "Lock Count", "Quota", "Consumption"};
+    private String[] columnHeadings = {"Id","Username" ,"First Name", "Last Name", "Phone", "Lock Count", "Quota", "Consumption"};
+
+
+    public UsersTableModel(JTable owner) {
+        Owner = owner;
+        tableRenderer = new DefaultTableCellRenderer();
+
+        JTableHelper.setColumnAlignment(owner,tableRenderer,JLabel.CENTER);
+
+        owner.setModel(this);
+        owner.getTableHeader().setReorderingAllowed(false);
+        owner.setRowSelectionAllowed(true);
+        owner.setRowSelectionAllowed(true);
+        owner.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        JTableHelper.setColumnWidth(owner,tableRenderer,0,50);
+        JTableHelper.setColumnWidth(owner,tableRenderer,1,75);
+        JTableHelper.setColumnWidth(owner,tableRenderer,2,100);
+        JTableHelper.setColumnWidth(owner,tableRenderer,3,100);
+        JTableHelper.setColumnWidth(owner,tableRenderer,4,100);
+        JTableHelper.setColumnWidth(owner,tableRenderer,5,80);
+        JTableHelper.setColumnWidth(owner,tableRenderer,6,120);
+
+    }
+
     @Override
     public int getRowCount() {
         return Accounts.size();
@@ -74,6 +107,17 @@ public class UsersTableModel extends AbstractTableModel {
         fireTableDataChanged();
     }
 
+    public void setDomain(Domain d){
+        Domain = d;
+        if (d==null){
+            Clear();
+        } else {
+            Accounts=Entities.Domains.Users.listAll(d);
+            fireTableDataChanged();
+        }
+        Domain = d;
+
+    }
     public void Clear(){
         Accounts.clear();
         fireTableDataChanged();

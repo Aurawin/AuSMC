@@ -2,27 +2,23 @@ package com.aurawin.scs.smc;
 
 
 
-import com.aurawin.core.Environment;
 import com.aurawin.core.lang.Database;
-import com.aurawin.core.lang.Table;
-import com.aurawin.core.stored.Dialect;
-import com.aurawin.core.stored.Driver;
 import com.aurawin.core.stored.Manifest;
 import com.aurawin.scs.smc.controllers.Domains;
 import com.aurawin.scs.smc.views.*;
 import com.aurawin.scs.stored.Entities;
-import com.aurawin.scs.smc.models.Settings;
+import com.aurawin.scs.smc.controllers.Settings;
 import com.aurawin.scs.stored.bootstrap.Bootstrap;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import static com.aurawin.core.solution.DBMSMode.*;
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
 
@@ -31,6 +27,7 @@ public class Controller {
         public static ResourceBundle Dialog;
         public static ResourceBundle DBMS;
         public static ResourceBundle Domain;
+        public static ResourceBundle Clustering;
     }
 
     public static final ArrayList<JFrame> Frames = new ArrayList<>();
@@ -48,16 +45,53 @@ public class Controller {
     public static viewLogin loginView;
     public static viewMain mainView;
     public static viewDialog dialogView;
-    private static void setDialogView(){
 
-        JPanel contentPane = (JPanel) frameDialog.getContentPane();
-        contentPane.add(dialogView.mainPanel);
+    public static void setDialogView(){
+        frameDialog.getContentPane().add(dialogView.mainPanel);
         frameDialog.pack();
+        frameDialog.addWindowListener(new WindowListener(){
+            @Override
+            public void windowClosing(WindowEvent e) {
+                dialogEnabledFrames();
+            }
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+                dialogEnabledFrames();
+            }
+
+            @Override
+            public void windowOpened(WindowEvent e) {
+                dialogDisabledFrames();
+            }
+
+            @Override
+            public void windowActivated(WindowEvent e) {
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent e) {
+                frameDialog.toFront();
+            }
+
+            @Override
+            public void windowIconified(WindowEvent e) {
+                frameDialog.setState(Frame.NORMAL);
+                frameDialog.toFront();
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+            }
+
+
+        });
 
         frameDialog.setDefaultCloseOperation(HIDE_ON_CLOSE);
         frameDialog.setSize(new Dimension(440, 480));
         frameDialog.setLocation(dimScreen.width/2-frameDialog.getSize().width/2, dimScreen.height/2-frameDialog.getSize().height/2);
-        frameDialog.setResizable(false);
+        //frameDialog.setResizable(false);
+
 
     }
     private static void setDomainView(){
@@ -74,7 +108,6 @@ public class Controller {
         frameMain.setTitle(System.getProperty("program.title"));
         frameMain.setLocation(dimScreen.width/2-frameMain.getSize().width/2, dimScreen.height/2-frameMain.getSize().height/2);
 
-        //domainView.resetView();
     }
     public static void swapDomainView(){
         frameMain.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -147,6 +180,7 @@ public class Controller {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
                     UIManager.setLookAndFeel(info.getClassName());
+                    UIManager.getLookAndFeelDefaults().put("TabbedPane:TabbedPaneTab.contentMargins", new Insets(10, 10, 10, 10));
                     break;
                 }
             }
@@ -164,6 +198,7 @@ public class Controller {
         Controller.Lang.Dialog = ResourceBundle.getBundle("dialog",Locale.getDefault());
         Controller.Lang.DBMS = ResourceBundle.getBundle("dbms",Locale.getDefault());
         Controller.Lang.Domain = ResourceBundle.getBundle("domain",Locale.getDefault());
+        Controller.Lang.Clustering = ResourceBundle.getBundle("clustering",Locale.getDefault());
 
         frameMain = new JFrame("mainPanel");
         Frames.add(frameMain);
@@ -185,6 +220,9 @@ public class Controller {
         setDialogView();
 
         swapDomainView();
+
+
+
     }
     public static boolean Connect(){
         Manifest mf = new Manifest(

@@ -1,8 +1,9 @@
-package com.aurawin.scs.smc.models;
+package com.aurawin.scs.smc.controllers;
 
 import com.aurawin.core.solution.DBMSMode;
 import com.aurawin.core.solution.Table;
 import com.aurawin.core.stream.MemoryStream;
+import com.aurawin.scs.smc.models.SettingsTimer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
@@ -18,7 +19,7 @@ public class Settings {
         Encoding = Table.DBMS.Default.Encoding;
     }
 
-    public static final int SaveDelay = 3000;
+    public static final int SaveDelay = 500;
     public static final SettingsTimer Timer = new SettingsTimer();
 
     @Expose
@@ -65,6 +66,10 @@ public class Settings {
     @SerializedName("csps")
     private int ClusteringSplitterSize;
 
+    @Expose
+    @SerializedName("kwsps")
+    private int KeywordSplitterSize;
+
     public void Load(){
         MemoryStream ms = new MemoryStream();
         try {
@@ -106,6 +111,7 @@ public class Settings {
         ClusterId=s.ClusterId;
         ResourceId=s.ResourceId;
         ClusteringSplitterSize=s.ClusteringSplitterSize;
+        KeywordSplitterSize = s.KeywordSplitterSize;
         NodeId=s.NodeId;
         if ((Encoding==null) || Encoding.isEmpty()) Encoding = Table.DBMS.Default.Encoding;
     }
@@ -206,6 +212,12 @@ public class Settings {
         ClusteringSplitterSize = size;
         Timer.Enable();
     }
+
+    public void setKeywordSplitterSize(int size){
+        KeywordSplitterSize = size;
+        Timer.Enable();
+    }
+    public int getKeywordSplitterSize(){ return KeywordSplitterSize;}
 
     public int getClusteringSplitterSize(){
         return ClusteringSplitterSize;

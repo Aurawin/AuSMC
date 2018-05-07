@@ -3,6 +3,8 @@ package com.aurawin.scs.smc.views;
 import com.aurawin.core.gui.JTextFieldListener;
 import com.aurawin.core.solution.Table;
 import com.aurawin.scs.smc.Controller;
+import com.aurawin.scs.smc.controllers.DialogCompletion;
+import com.aurawin.scs.smc.controllers.OnDialogCompletion;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -141,6 +143,10 @@ public class viewLogin {
                 } else {
                     btnLogin.setEnabled(true);
                     Controller.dialogView.showDialog(
+                            new OnDialogCompletion(){
+                                @Override
+                                public void Complete (DialogCompletion Data){}
+                            },
                             dmError,
                             Controller.Lang.Dialog.getString("dmms.login.failure.title"),
                             Controller.Lang.Dialog.getString("dmms.login.failure.message")

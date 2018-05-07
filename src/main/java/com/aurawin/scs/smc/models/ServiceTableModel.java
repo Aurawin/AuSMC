@@ -9,6 +9,7 @@ import com.aurawin.scs.stored.cloud.Service;
 import com.aurawin.scs.stored.cloud.service.Identify;
 import com.aurawin.scs.stored.domain.user.Account;
 
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,14 +17,18 @@ import java.util.List;
 import static com.aurawin.core.stored.entities.Entities.CascadeOff;
 
 public class ServiceTableModel extends AbstractTableModel {
-
+    protected JTable Owner;
     public static Node Node;
     public static ArrayList<Service> Services = new ArrayList<>();
 
-
-
-
     private String[] columnHeadings = {"Id","Enabled" ,"Scale", "Service", "Description"};
+
+
+    public ServiceTableModel(JTable owner) {
+        owner.getTableHeader().setReorderingAllowed(false);
+        Owner = owner;
+    }
+
     @Override
     public int getRowCount() {
         return Services.size();
@@ -88,7 +93,7 @@ public class ServiceTableModel extends AbstractTableModel {
         fireTableDataChanged();
     }
 
-    public void load(Node node){
+    public void refreshView(Node node){
         Node = node;
         if (node!=null) {
             Services = Identify.Force(node);

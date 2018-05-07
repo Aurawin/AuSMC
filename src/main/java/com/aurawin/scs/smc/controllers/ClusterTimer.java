@@ -1,13 +1,9 @@
-package com.aurawin.scs.smc.models;
+package com.aurawin.scs.smc.controllers;
 
 import com.aurawin.scs.smc.Controller;
 
 import java.util.Timer;
 import java.util.TimerTask;
-
-import static com.aurawin.scs.smc.models.ClusterTimer.Mode.cmGroup;
-import static com.aurawin.scs.smc.models.ClusterTimer.Mode.cmNode;
-import static com.aurawin.scs.smc.models.ClusterTimer.Mode.cmResource;
 
 public class ClusterTimer {
     private Timer timer;

@@ -2,79 +2,93 @@ package com.aurawin.scs.smc.views;
 
 import com.aurawin.scs.smc.Controller;
 import com.aurawin.scs.smc.Package;
+import com.aurawin.scs.smc.controllers.DialogCompletion;
+import com.aurawin.scs.smc.controllers.OnDialogCompletion;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.util.Locale;
 import java.util.ResourceBundle;
+
+import static com.aurawin.scs.smc.Controller.dialogView;
+import static com.aurawin.scs.smc.Controller.frameDialog;
 
 public class viewDialog {
     private JButton btnCancel;
     private JButton btnConfirm;
     private JButton btnIcon;
     private JLabel lblTitle;
-    public  JPanel mainPanel;
+    public JPanel mainPanel;
     private JEditorPane epMessage;
     private DialogMode Mode;
-    public boolean Canceled;
-    public boolean Confirmed;
+    private DialogCompletion Completion;
 
     public viewDialog() {
-        Canceled=false;
-        Confirmed=false;
+        Completion = new DialogCompletion();
         btnCancel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Canceled=true;
-                Confirmed=false;
-                Controller.frameDialog.setVisible(false);
+
+                Completion.Canceled = true;
+                Completion.Confirmed = false;
+                frameDialog.setVisible(false);
+                Controller.dialogEnabledFrames();
+                Completion.Method.Complete(Completion);
+
             }
         });
         btnConfirm.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Canceled=false;
-                Confirmed=true;
-                Controller.frameDialog.setVisible(false);
+                Completion.Canceled = false;
+                Completion.Confirmed = true;
+                frameDialog.setVisible(false);
+                Controller.dialogEnabledFrames();
+                Completion.Method.Complete(Completion);
             }
         });
+
     }
-    public boolean showDialog(DialogMode dm, String Title, String Message){
+
+    public void showDialog(OnDialogCompletion completion, DialogMode dm, String Title, String Message) {
+
+
+        Completion.Method = completion;
+
+        frameDialog.getContentPane().invalidate();
+        frameDialog.validate();
+
+
         setMode(dm);
         lblTitle.setText(Title);
         epMessage.setText(Message);
-        Controller.frameDialog.setVisible(true);
-        Controller.dialogDisabledFrames();
-        Controller.frameLogin.setEnabled(false);
-        while (Controller.frameDialog.isShowing()){
-            try {
-                Thread.sleep(400);
-            } catch (InterruptedException ex){
-                break;
-            }
-        }
-        Controller.dialogEnabledFrames();
-        return Canceled;
+
+        frameDialog.setVisible(true);
+
+
     }
-    private void setMode(DialogMode dm){
-        Canceled=false;
+
+    private void setMode(DialogMode dm) {
+        Completion.Canceled = false;
+        Completion.Confirmed = false;
         Mode = dm;
-        switch (dm){
+        switch (dm) {
             case dmConfirmation:
-                Controller.frameDialog.setTitle(Controller.Lang.Dialog.getString("title_question"));
-                if ((lblTitle.getText()==null) || (lblTitle.getText().length()==0))
+                frameDialog.setTitle(Controller.Lang.Dialog.getString("title_question"));
+                if ((lblTitle.getText() == null) || (lblTitle.getText().length() == 0))
                     lblTitle.setText(Controller.Lang.Dialog.getString("label_question"));
                 btnIcon.setDisabledIcon(new ImageIcon(Package.class.getResource("/icons/question.png")));
 
                 break;
             case dmError:
-                Controller.frameDialog.setTitle(Controller.Lang.Dialog.getString("title_error"));
-                if ((lblTitle.getText()==null) || (lblTitle.getText().length()==0))
+                frameDialog.setTitle(Controller.Lang.Dialog.getString("title_error"));
+                if ((lblTitle.getText() == null) || (lblTitle.getText().length() == 0))
                     lblTitle.setText(Controller.Lang.Dialog.getString("label_error"));
                 btnIcon.setDisabledIcon(new ImageIcon(Package.class.getResource("/icons/exclamation.png")));
                 break;
         }
 
     }
+
+
 }

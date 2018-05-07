@@ -75,7 +75,7 @@
                 <properties>
                   <autoscrolls value="true"/>
                   <editable value="false"/>
-                  <enabled value="false"/>
+                  <enabled value="true"/>
                   <focusable value="true"/>
                   <text value=""/>
                 </properties>
