@@ -1,9 +1,9 @@
-package com.aurawin.scs.smc.controllers;
+package com.aurawin.scs.smc.models;
 
 import com.aurawin.core.solution.DBMSMode;
 import com.aurawin.core.solution.Table;
 import com.aurawin.core.stream.MemoryStream;
-import com.aurawin.scs.smc.models.SettingsTimer;
+import com.aurawin.scs.smc.controllers.SettingsTimer;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
@@ -14,8 +14,8 @@ import java.nio.file.Files;
 
 import static com.aurawin.core.solution.DBMSMode.dbmsmNone;
 
-public class Settings {
-    public Settings() {
+public class SettingsModel {
+    public SettingsModel() {
         Encoding = Table.DBMS.Default.Encoding;
     }
 
@@ -76,7 +76,7 @@ public class Settings {
             File f = new File(com.aurawin.core.solution.Settings.File.Settings());
             ms.LoadFromFile(f);
             Gson gson = new GsonBuilder().create();
-            Settings s = gson.fromJson(ms.toString(),Settings.class);
+            SettingsModel s = gson.fromJson(ms.toString(),SettingsModel.class);
             Assign(s);
         } catch (Exception ex){
 
@@ -100,7 +100,7 @@ public class Settings {
             ms.close();
         }
     }
-    public void Assign(Settings s){
+    public void Assign(SettingsModel s){
         Username=s.Username;
         Password=s.Password;
         Hostname=s.Hostname;

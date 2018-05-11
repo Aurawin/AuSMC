@@ -1,6 +1,7 @@
-package com.aurawin.scs.smc.models;
+package com.aurawin.scs.smc.controllers;
 
-import com.aurawin.scs.smc.controllers.Settings;
+import com.aurawin.scs.smc.models.SettingsModel;
+import com.aurawin.scs.smc.models.SettingsTimerTask;
 
 import java.util.Timer;
 
@@ -14,7 +15,7 @@ public class SettingsTimer {
             timer.cancel();
         }
         timer = new Timer();
-        timer.schedule(new SettingsTimerTask(),Settings.SaveDelay);
+        timer.schedule(new SettingsTimerTask(),SettingsModel.SaveDelay);
 
     }
 }

@@ -6,9 +6,13 @@ import com.aurawin.core.lang.Database;
 import com.aurawin.core.stored.Manifest;
 import com.aurawin.scs.smc.controllers.Domains;
 import com.aurawin.scs.smc.views.*;
+import com.aurawin.scs.solution.Table;
 import com.aurawin.scs.stored.Entities;
-import com.aurawin.scs.smc.controllers.Settings;
+import com.aurawin.scs.smc.models.SettingsModel;
 import com.aurawin.scs.stored.bootstrap.Bootstrap;
+import com.aurawin.scs.stored.cloud.Group;
+import com.aurawin.scs.stored.cloud.Resource;
+import com.aurawin.scs.stored.cloud.Service;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,6 +27,14 @@ import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
 
 public class Controller {
+    public static class Cloud{
+        public static com.aurawin.scs.stored.cloud.Group Cluster;
+        public static com.aurawin.scs.stored.cloud.Resource Resource;
+        public static com.aurawin.scs.stored.cloud.Node Node;
+        public static com.aurawin.scs.stored.cloud.Service serviceDisk;
+        public static ArrayList<com.aurawin.scs.stored.cloud.Disk> Disks;
+        public static com.aurawin.scs.stored.cloud.Disk Disk;
+    }
     public static class Lang{
         public static ResourceBundle Dialog;
         public static ResourceBundle DBMS;
@@ -34,7 +46,7 @@ public class Controller {
     public static final String basePackage = "com.aurawin";
 
     public static Dimension dimScreen = Toolkit.getDefaultToolkit().getScreenSize();
-    public static Settings Configuration = new Settings();
+    public static SettingsModel Configuration = new SettingsModel();
 
     public static JFrame frameMain;
 
@@ -108,8 +120,11 @@ public class Controller {
         frameMain.setTitle(System.getProperty("program.title"));
         frameMain.setLocation(dimScreen.width/2-frameMain.getSize().width/2, dimScreen.height/2-frameMain.getSize().height/2);
 
+
+
     }
     public static void swapDomainView(){
+        clusteringView.clearView();
         frameMain.setDefaultCloseOperation(EXIT_ON_CLOSE);
         JPanel contentPane = (JPanel) frameMain.getContentPane();
         Dimension d = frameMain.getSize();
@@ -258,7 +273,28 @@ public class Controller {
             }
         }
     }
+    public static void mountPointChanged(Service s){
+        Cloud.serviceDisk=Entities.Cloud.Service.byOwnerIdAndKind(Cloud.Node,Table.Stored.Cloud.Service.Kind.svcAUDISK);
+        Cloud.Disk = Entities.Cloud.Disk.byService(Cloud.serviceDisk);
+        clusteringView.updateStatusBar();
+        domainView.updateStatusBar();
+    }
     public static void loggedIn(){
+        Cloud.Cluster=Entities.Lookup(com.aurawin.scs.stored.cloud.Group.class,Configuration.getClusterId());
+        if (Cloud.Cluster!=null) {
+            Cloud.Resource = Entities.Lookup(com.aurawin.scs.stored.cloud.Resource.class, Configuration.getResourceId());
+            if (Cloud.Resource!=null) {
+                Cloud.Node = Entities.Lookup(com.aurawin.scs.stored.cloud.Node.class, Configuration.getNodeId());
+                if (Cloud.Node!=null) {
+                    Cloud.Disks = Entities.Cloud.Disk.listAll();
+                    Cloud.serviceDisk = Entities.Cloud.Service.byOwnerIdAndKind(Cloud.Node, Table.Stored.Cloud.Service.Kind.svcAUDISK);
+                    Cloud.Disk = Entities.Cloud.Disk.byService(Cloud.serviceDisk);
+                }
+            }
+        }
+        clusteringView.updateStatusBar();
+        domainView.updateStatusBar();
         Domains.loggedIn();
+
     }
 }

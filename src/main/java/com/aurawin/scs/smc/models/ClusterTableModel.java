@@ -7,18 +7,29 @@ import com.aurawin.scs.stored.cloud.Node;
 import com.aurawin.scs.stored.cloud.Service;
 import com.aurawin.scs.stored.cloud.service.Identify;
 
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.aurawin.core.stored.entities.Entities.CascadeOff;
 
 public class ClusterTableModel extends AbstractTableModel {
-
+    protected JTable Owner;
     public static com.aurawin.scs.stored.cloud.Group Cluster;
+    private DefaultTableCellRenderer TableRenderer;
     public static ArrayList<Group> Clusters = new ArrayList<>();
-
     private String[] columnHeadings = {Controller.Lang.Clustering.getString("label.clustering.clusters")};
+
+    public ClusterTableModel(JTable owner) {
+        Owner = owner;
+        TableRenderer=new DefaultTableCellRenderer();
+        Owner.setModel(this);
+        Owner.setRowSelectionAllowed(true);
+        Owner.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    }
+
     @Override
     public int getRowCount() {
         return Clusters.size();

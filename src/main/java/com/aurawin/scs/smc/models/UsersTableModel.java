@@ -14,6 +14,7 @@ import java.util.List;
 public class UsersTableModel extends AbstractTableModel {
     protected static JTable Owner;
     protected static Domain Domain;
+    protected static Account User;
     protected DefaultTableCellRenderer tableRenderer;
 
     public static ArrayList<Account> Accounts = new ArrayList<>();
@@ -99,6 +100,9 @@ public class UsersTableModel extends AbstractTableModel {
     public void removeAccount(Account fs) {
         Accounts.remove(fs);
         fireTableDataChanged();
+
+        Account ua = getUser(0);
+        if (ua!=null) Owner.setRowSelectionInterval(0, 0);
     }
 
     public void setAccountList(List l) {
@@ -117,6 +121,19 @@ public class UsersTableModel extends AbstractTableModel {
         }
         Domain = d;
 
+    }
+    public Account getCurrentUser(){
+        return User;
+    }
+    public void setCurrentUser(Account ua){
+        User = ua;
+    }
+    public Account getUser(int idx){
+        if ( (idx==-1) ||idx>=Accounts.size()) {
+            return null;
+        } else {
+            return Accounts.get(idx);
+        }
     }
     public void Clear(){
         Accounts.clear();

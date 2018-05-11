@@ -1,12 +1,14 @@
 package com.aurawin.scs.smc.models;
 
 import com.aurawin.scs.smc.Controller;
+import com.aurawin.scs.smc.JTableHelper;
 import com.aurawin.scs.stored.Entities;
 import com.aurawin.scs.stored.cloud.Group;
 import com.aurawin.scs.stored.cloud.Resource;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,8 +16,7 @@ import static com.aurawin.core.stored.entities.Entities.CascadeOff;
 
 public class ResourceTableModel extends AbstractTableModel {
     protected JTable Owner;
-    public static Group Cluster;
-
+    private DefaultTableCellRenderer TableRenderer;
     public static ArrayList<Resource> Resources = new ArrayList<>();
 
     private String[] columnHeadings = {
@@ -24,8 +25,15 @@ public class ResourceTableModel extends AbstractTableModel {
     };
 
     public ResourceTableModel(JTable owner) {
-        owner.getTableHeader().setReorderingAllowed(false);
         Owner = owner;
+        Owner.setModel(this);
+        Owner.setRowSelectionAllowed(true);
+        Owner.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        TableRenderer= new DefaultTableCellRenderer();
+        owner.getTableHeader().setReorderingAllowed(false);
+        JTableHelper.setColumnWidth(owner,TableRenderer,0,75);
+
     }
 
     @Override
@@ -92,9 +100,12 @@ public class ResourceTableModel extends AbstractTableModel {
     }
 
     public void refreshView(Group cluster){
-        if ( (Cluster==null) || (Cluster!=null) && Cluster.getId()!=cluster.getId()) {
-            Cluster = cluster;
-            Resources = Entities.Cloud.Resource.listAll(Cluster);
+        if (
+                (Controller.clusteringView.Cluster==null) ||
+                (Controller.clusteringView.Cluster!=null) &&
+                (Controller.clusteringView.Cluster.getId()!=cluster.getId())
+        ) {
+            Resources = Entities.Cloud.Resource.listAll(cluster);
             fireTableDataChanged();
         }
     }

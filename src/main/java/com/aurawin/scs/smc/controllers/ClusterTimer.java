@@ -1,6 +1,7 @@
 package com.aurawin.scs.smc.controllers;
 
 import com.aurawin.scs.smc.Controller;
+import com.aurawin.scs.smc.models.SettingsModel;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -42,7 +43,7 @@ public class ClusterTimer {
             timer.cancel();
         }
         timer = new Timer();
-        timer.schedule(new Task(),Settings.SaveDelay);
+        timer.schedule(new Task(),SettingsModel.SaveDelay);
 
     }
 }

@@ -21,19 +21,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
-import static com.aurawin.core.stored.entities.Entities.CascadeOff;
-import static com.aurawin.core.stored.entities.Entities.CascadeOn;
+import static com.aurawin.core.stored.entities.Entities.*;
 import static com.aurawin.scs.solution.Table.Stored.Cloud.Service.Kind.svcAUDISK;
 
 public class viewClustering {
     private static boolean Loading = true;
     private final ClusterTimer AutosaveTimer = new ClusterTimer();
-    private Group Cluster;
-    private Resource Resource;
-    private Node Node;
-    private Service Service;
-    private Location Location;
-    private ArrayList<Domain>Domains;
+    public Group Cluster;
+    public Resource Resource;
+    public Node Node;
+    public  Service Service;
+    public Location Location;
+    public ArrayList<Domain>Domains;
 
 
     private JComboBox cbDomainAllocation;
@@ -93,6 +92,10 @@ public class viewClustering {
     private JPanel pnlScroller;
     private JScrollPane spServices;
     private JTable tblNodes;
+    private JLabel lblMount;
+    private JLabel lblNode;
+    private JLabel lblResource;
+    private JLabel lblGroup;
 
     protected ArrayList<Group> Clusters;
 
@@ -103,44 +106,16 @@ public class viewClustering {
 
     private boolean navigationExpanded;
 
-    private DefaultTableCellRenderer svcTableRenderer;
-    private DefaultTableCellRenderer gTableRenderer;
-    private DefaultTableCellRenderer rTableRenderer;
-    private DefaultTableCellRenderer nTableRenderer;
-
     public viewClustering() {
         navigationExpanded=true;
 
         ServiceModel.init();
-        gTableRenderer = new DefaultTableCellRenderer();
-        svcTableRenderer = new DefaultTableCellRenderer();
+
         svcTableModel = new ServiceTableModel(tblServices);
-        gTableModel = new ClusterTableModel();
+        gTableModel = new ClusterTableModel(tblCluster);
         rTableModel = new ResourceTableModel(tblResources);
         nTableModel = new NodeTableModel(tblNodes);
 
-        tblServices.setModel(svcTableModel);
-        tblServices.setRowSelectionAllowed(true);
-        tblServices.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        JTableHelper.setColumnWidth(tblServices,svcTableRenderer,0,75);
-        JTableHelper.setColumnWidth(tblServices,svcTableRenderer,1,75);
-        JTableHelper.setColumnWidth(tblServices,svcTableRenderer,2,55);
-        JTableHelper.setColumnWidth(tblServices,svcTableRenderer,3,140);
-
-        tblCluster.setModel(gTableModel);
-        tblCluster.setRowSelectionAllowed(true);
-        tblCluster.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        tblResources.setModel(rTableModel);
-        tblResources.setRowSelectionAllowed(true);
-        tblResources.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        JTableHelper.setColumnWidth(tblResources,rTableRenderer,0,75);
-
-        tblNodes.setModel(nTableModel);
-        tblNodes.setRowSelectionAllowed(true);
-        tblNodes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        JTableHelper.setColumnWidth(tblNodes,nTableRenderer,0,75);
 
         tblServices.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -224,8 +199,6 @@ public class viewClustering {
                 }
             }
         });
-        //JTableHelper.setColumnAlignment(tblServices,svcTableRenderer,JLabel.Left);
-
 
         Cluster=null;
         tpClustering.setEnabledAt(0,true);
@@ -287,6 +260,8 @@ public class viewClustering {
                 Entities.Save(Cluster,CascadeOn);
 
                 gTableModel.addCluster(Cluster);
+
+                Cluster = null;  // so we can switch clusters by hand.
             }
         });
         txtClusterName.getDocument().addDocumentListener(new JTextFieldListener() {
@@ -418,7 +393,7 @@ public class viewClustering {
                                 @Override
                                 public void Complete (DialogCompletion Data){
                                      if (Data.Confirmed) {
-                                         Entities.Delete(Resource, CascadeOn);
+                                         Entities.Delete(Resource, CascadeOn,UseNewTransaction);
                                          gTableModel.refreshView();
                                      }
                                 }
@@ -484,7 +459,8 @@ public class viewClustering {
                                 public void Complete (DialogCompletion Data){
                                     if (Data.Confirmed) {
                                         gTableModel.deleteCluster(Cluster);
-                                        Entities.Delete(Cluster,CascadeOn);
+                                        Entities.Delete(Cluster,CascadeOn,UseNewTransaction);
+                                        clearView();
 
                                     }
                                 }
@@ -539,7 +515,24 @@ public class viewClustering {
                 if (Loading) return;
                 if (Service!=null) {
                     Service.setMountPoint(txtMountPoint.getText());
+                    Disk d = Entities.Cloud.Disk.byService(Service);
+                    if (d!=null){
+                        d.setMount(Service.getMountPoint());
+                        Entities.Update(d,CascadeOn);
+                    }
                     svcTableModel.serviceChanged(Service);
+
+
+                    if (
+                            (Controller.Cloud.Cluster!=null) &&
+                            (Controller.Cloud.Resource!=null) &&
+                            (Controller.Cloud.Node!=null) &&
+                            (Controller.Cloud.Node.getId()==Service.getOwner().getId())
+
+                            ){
+                        Controller.mountPointChanged(Service);
+                    }
+
                 }
 
             }
@@ -553,7 +546,7 @@ public class viewClustering {
                                 @Override
                                 public void Complete (DialogCompletion Data){
                                     if (Data.Confirmed) {
-                                        Entities.Delete(Node,CascadeOn);
+                                        Entities.Delete(Node,CascadeOn,UseNewTransaction);
                                         gTableModel.refreshView();
                                     }
                                 }
@@ -633,12 +626,64 @@ public class viewClustering {
             }
         });
     }
+    public void clearView(){
+        Loading = true;
+        try{
+            txtClusterName.setText("");
+            txtClusterDescription.setText("");
+            txtClusterTown.setText("");
+            txtClusterCity.setText("");
+            txtClusterState.setText("");
+            txtClusterCountry.setText("");
+            txtClusterPostal.setText("");
+            txtClusterBuilding.setText("");
+            txtClusterStreet.setText("");
+            txtClusterFloor.setText("");
+            txtClusterRoom.setText("");
+            txtClusterRack.setText("");
+            txtClusterRow.setText("");
+            tblCluster.getSelectionModel().clearSelection();
+            gTableModel.Clear();
+            Cluster=null;
 
+
+            txtResourceName.setText("");
+            tblResources.getSelectionModel().clearSelection();
+            rTableModel.Clear();
+            Resource=null;
+
+            txtNodeName.setText("");
+            txtNodeAddress.setText("");
+            cbDomainAllocation.setSelectedIndex(-1);
+            nTableModel.Clear();
+            tblNodes.getSelectionModel().clearSelection();
+            Node=null;
+
+            txtMountPoint.setText("");
+            lblNodeStatus.setText("");
+            svcTableModel.Clear();
+            tblServices.getSelectionModel().clearSelection();
+
+            Service = null;
+
+            tpClustering.setSelectedIndex(0);
+            tpClustering.setEnabledAt(0,true);
+            tpClustering.setEnabledAt(1,false);
+            tpClustering.setEnabledAt(2,false);
+            tpClustering.setEnabledAt(3,false);
+
+
+        }finally{
+            Loading=false;
+        }
+    }
 
     public void selectGroup(Group group, boolean switchTab){
         if ( (Cluster!=null) &&(Cluster.getId()==group.getId())) return;
         Loading=true;
         try {
+            rTableModel.refreshView(group);
+
             resetNodeView();
             resetResourceView();
             resetServiceView();
@@ -676,7 +721,6 @@ public class viewClustering {
     }
     public void selectResource(Resource resource, boolean switchTab){
         if ((Resource!=null) && Resource.getId()==resource.getId()) return;
-        Resource = resource;
 
         //selectGroup(Resource.getGroup(), false);
 
@@ -690,12 +734,13 @@ public class viewClustering {
         btnResourceDelete.setEnabled(true);
         btnResourceSave.setEnabled(true);
 
-
-        txtResourceName.setText(Resource.getName());
-        Resource=resource;
-
+        txtResourceName.setText(resource.getName());
         rTableModel.refreshView(resource.getGroup());
+
         nTableModel.refreshView(resource);
+
+        Resource = resource;
+
 
         selectNode(null,false);
     }
@@ -744,10 +789,26 @@ public class viewClustering {
 
 
     }
+    public void updateStatusBar(){
+        long iValue;
+        String sMount;
+        iValue =  (Controller.Cloud.Node==null) ? 0 : Controller.Cloud.Node.getId();
+        lblNode.setText(String.valueOf(iValue));
+        iValue =  (Controller.Cloud.Resource==null) ? 0 : Controller.Cloud.Resource.getId();
+        lblResource.setText(String.valueOf(iValue));
+        iValue =  (Controller.Cloud.Cluster==null) ? 0 : Controller.Cloud.Cluster.getId();
+        lblGroup.setText(String.valueOf(iValue));
+        sMount = (Controller.Cloud.Disk==null) ? "" : Controller.Cloud.Disk.getMount();
+        sMount = (sMount.length()==0) ? Controller.Lang.Clustering.getString("label.clustering.disk.mount.none") : sMount;
+        lblMount.setText(sMount);
+    }
     public void refreshView(){
         Loading = true;
         resetServiceView();
+        resetResourceView();
+        resetNodeView();
         Domains = Entities.Domains.listAll();
+
         cbDomainAllocation.removeAllItems();
         //svcTableModel.Clear();
         for (Domain d : Domains){
@@ -755,6 +816,7 @@ public class viewClustering {
         }
 
         gTableModel.refreshView();
+
 
         int size = Controller.Configuration.getClusteringSplitterSize();
         if (size <120) size = 120;
@@ -792,6 +854,21 @@ public class viewClustering {
             sldServiceScale.setValue(svc.getScaleStart());
             pnlMountPoint.setVisible(svc.getKind()==svcAUDISK);
             txtMountPoint.setText(svc.getMountPoint());
+            if (svc.getKind()==svcAUDISK){
+                Node n = svc.getOwner();
+                Disk d = Entities.Cloud.Disk.byService(svc);
+                if (svc.getEnabled()) {
+                    if (d == null) {
+                        d = new Disk();
+                        d.setOwnerId(n.getId());
+                        d.setMount(svc.getMountPoint());
+                        d.setServiceId(svc.getId());
+                        Entities.Save(d, CascadeOn);
+
+                    }
+                }
+            }
+
         } finally {
             Loading=false;
         }
