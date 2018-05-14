@@ -17,17 +17,18 @@ import static com.aurawin.core.stored.entities.Entities.CascadeOff;
 
 public class ClusterTableModel extends AbstractTableModel {
     protected JTable Owner;
-    public static com.aurawin.scs.stored.cloud.Group Cluster;
     private DefaultTableCellRenderer TableRenderer;
     public static ArrayList<Group> Clusters = new ArrayList<>();
     private String[] columnHeadings = {Controller.Lang.Clustering.getString("label.clustering.clusters")};
 
     public ClusterTableModel(JTable owner) {
-        Owner = owner;
         TableRenderer=new DefaultTableCellRenderer();
-        Owner.setModel(this);
-        Owner.setRowSelectionAllowed(true);
-        Owner.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        owner.setModel(this);
+        owner.setRowSelectionAllowed(true);
+        owner.getTableHeader().setReorderingAllowed(false);
+        owner.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        Owner = owner;
+
     }
 
     @Override
@@ -71,12 +72,6 @@ public class ClusterTableModel extends AbstractTableModel {
 
     public void deleteCluster(Group g) {
         Clusters.remove(g);
-        fireTableDataChanged();
-    }
-
-    public void setClusterList(List l) {
-        Clusters.clear();
-        Clusters.addAll(l);
         fireTableDataChanged();
     }
 

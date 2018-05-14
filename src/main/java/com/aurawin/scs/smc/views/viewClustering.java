@@ -116,7 +116,6 @@ public class viewClustering {
         rTableModel = new ResourceTableModel(tblResources);
         nTableModel = new NodeTableModel(tblNodes);
 
-
         tblServices.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
@@ -623,6 +622,12 @@ public class viewClustering {
                 } catch (Exception ex){
 
                 }
+            }
+        });
+        btnSettings.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Controller.swapSettingsView();
             }
         });
     }

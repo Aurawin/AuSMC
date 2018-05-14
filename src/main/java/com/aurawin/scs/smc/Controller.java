@@ -5,6 +5,7 @@ package com.aurawin.scs.smc;
 import com.aurawin.core.lang.Database;
 import com.aurawin.core.stored.Manifest;
 import com.aurawin.scs.smc.controllers.Domains;
+import com.aurawin.scs.smc.controllers.Settings;
 import com.aurawin.scs.smc.views.*;
 import com.aurawin.scs.solution.Table;
 import com.aurawin.scs.stored.Entities;
@@ -40,6 +41,7 @@ public class Controller {
         public static ResourceBundle DBMS;
         public static ResourceBundle Domain;
         public static ResourceBundle Clustering;
+        public static ResourceBundle Settings;
     }
 
     public static final ArrayList<JFrame> Frames = new ArrayList<>();
@@ -57,6 +59,7 @@ public class Controller {
     public static viewLogin loginView;
     public static viewMain mainView;
     public static viewDialog dialogView;
+    public static viewSettings settingsView;
 
     public static void setDialogView(){
         frameDialog.getContentPane().add(dialogView.mainPanel);
@@ -106,6 +109,7 @@ public class Controller {
 
 
     }
+
     private static void setDomainView(){
         frameMain.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -123,22 +127,37 @@ public class Controller {
 
 
     }
-    public static void swapDomainView(){
+    public static void swapSettingsView(){
         clusteringView.clearView();
+        settingsView.refreshViews();
+
         frameMain.setDefaultCloseOperation(EXIT_ON_CLOSE);
         JPanel contentPane = (JPanel) frameMain.getContentPane();
         Dimension d = frameMain.getSize();
         contentPane.remove(clusteringView.mainPanel);
+        contentPane.remove(domainView.mainPanel);
+        contentPane.add(settingsView.mainPanel);
+
+        frameMain.pack();
+        frameMain.setSize(d);
+    }
+    public static void swapDomainView(){
+        clusteringView.clearView();
+
+        frameMain.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        JPanel contentPane = (JPanel) frameMain.getContentPane();
+        Dimension d = frameMain.getSize();
+        contentPane.remove(settingsView.mainPanel);
+        contentPane.remove(clusteringView.mainPanel);
         contentPane.add(domainView.mainPanel);
         frameMain.pack();
         frameMain.setSize(d);
-        //domainView.mainPanel.repaint();
-
     }
     public static void swapClusteringView(){
         frameMain.setDefaultCloseOperation(EXIT_ON_CLOSE);
         JPanel contentPane = (JPanel) frameMain.getContentPane();
         Dimension d = frameMain.getSize();
+        contentPane.remove(settingsView.mainPanel);
         contentPane.remove(domainView.mainPanel);
         contentPane.add(clusteringView.mainPanel);
         frameMain.pack();
@@ -214,6 +233,7 @@ public class Controller {
         Controller.Lang.DBMS = ResourceBundle.getBundle("dbms",Locale.getDefault());
         Controller.Lang.Domain = ResourceBundle.getBundle("domain",Locale.getDefault());
         Controller.Lang.Clustering = ResourceBundle.getBundle("clustering",Locale.getDefault());
+        Controller.Lang.Settings=ResourceBundle.getBundle("settings",Locale.getDefault());
 
         frameMain = new JFrame("mainPanel");
         Frames.add(frameMain);
@@ -228,6 +248,7 @@ public class Controller {
         dialogView=new viewDialog();
         loginView = new viewLogin();
         domainView = new viewDomain();
+        settingsView= new viewSettings();
         clusteringView = new viewClustering();
 
         setupLoginForm();
@@ -295,6 +316,7 @@ public class Controller {
         clusteringView.updateStatusBar();
         domainView.updateStatusBar();
         Domains.loggedIn();
+        Settings.loggedIn();
 
     }
 }

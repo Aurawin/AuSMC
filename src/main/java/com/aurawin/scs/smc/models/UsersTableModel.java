@@ -32,7 +32,6 @@ public class UsersTableModel extends AbstractTableModel {
         owner.setModel(this);
         owner.getTableHeader().setReorderingAllowed(false);
         owner.setRowSelectionAllowed(true);
-        owner.setRowSelectionAllowed(true);
         owner.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         JTableHelper.setColumnWidth(owner,tableRenderer,0,50);

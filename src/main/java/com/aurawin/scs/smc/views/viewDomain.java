@@ -633,6 +633,12 @@ public class viewDomain{
                 }
             }
         });
+        btnSettings.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Controller.swapSettingsView();
+            }
+        });
     }
     public void keywordsViewChanged(){
         txtKeywordValue.setEnabled(false);

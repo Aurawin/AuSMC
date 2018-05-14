@@ -96,12 +96,6 @@ public class ServiceTableModel extends AbstractTableModel {
         fireTableDataChanged();
     }
 
-    public void setServiceList(List l) {
-        Services.clear();
-        Services.addAll(l);
-        fireTableDataChanged();
-    }
-
     public void Clear(){
         Services.clear();
         fireTableDataChanged();
