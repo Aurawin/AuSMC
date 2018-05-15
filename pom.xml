@@ -19,6 +19,19 @@
         <maven.compiler.target>1.10</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+    <repositories>
+        <repository>
+            <id>aurawin</id>
+            <name>Aurawin</name>
+            <url>http://au2.aurawin.com:8081/repository/aurawin</url>
+        </repository>
+        <repository>
+            <id>central</id>
+            <name>Maven Repository Switchboard</name>
+            <layout>default</layout>
+            <url>http://repo1.maven.org/maven2</url>
+        </repository>
+    </repositories>
     <distributionManagement>
         <repository>
             <id>aurawin</id>
@@ -41,7 +54,7 @@
         <dependency>
             <groupId>com.aurawin</groupId>
             <artifactId>core</artifactId>
-            <version>2018.5.15.1</version>
+            <version>2018.5.15.2</version>
         </dependency>
         <dependency>
             <groupId>com.aurawin</groupId>
@@ -118,15 +131,6 @@
                             <skipTests>true</skipTests>
                         </configuration>
                     </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <version>2.4</version>
-                        <configuration>
-                            <finalName>${project.groupId}.${project.artifactId}-${project.version}</finalName>
-                        </configuration>
-                    </plugin>
-
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>ideauidesigner-maven-plugin</artifactId>
