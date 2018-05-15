@@ -106,9 +106,6 @@ public class viewDomain{
     private JTabbedPane tpUser;
     private JPanel tabUserEditor;
     private JPanel tabUserCore;
-    private JSplitPane spUserCore;
-    private JTable tblUserCoreObjects;
-    private JTable tblUserCoreCommands;
     private JTextField txtUserFirstName;
     private JTextField txtUserLastName;
     private JPasswordField txtUserPassword;
@@ -122,6 +119,7 @@ public class viewDomain{
     private JLabel lblMount;
     private JLabel lblGroup;
     private JButton btnKeywordSave;
+    private JTable tblUserRoles;
 
 
     public static UsersTableModel usersTableModel;
@@ -564,8 +562,8 @@ public class viewDomain{
             public void actionPerformed(ActionEvent e) {
                 Account ua = usersTableModel.getCurrentUser();
                 if (
-                        (ua.getName().equalsIgnoreCase(com.aurawin.core.lang.Table.String(com.aurawin.scs.lang.Table.Entities.Domain.Root))) ||
-                                (ua.getName().equalsIgnoreCase(com.aurawin.core.lang.Table.String(com.aurawin.scs.lang.Table.Entities.Domain.Default)))
+                        (ua.getName().equalsIgnoreCase(com.aurawin.core.lang.Table.String(com.aurawin.scs.lang.Table.Entities.Domain.Root)))
+
                 ) return;
                 Controller.dialogView.showDialog(
                         new OnDialogCompletion(){

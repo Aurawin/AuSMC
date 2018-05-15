@@ -516,9 +516,16 @@ public class viewClustering {
                     if (d!=null){
                         d.setMount(Service.getMountPoint());
                         Entities.Update(d,CascadeOn);
+                    } else {
+                        d = new Disk();
+
+                        d.setMount(Service.getMountPoint());
+                        d.setServiceId(Service.getId());
+                        d.setOwnerId(Service.getOwner().getId());
+
+                        Entities.Save(d,CascadeOn);
                     }
                     svcTableModel.serviceChanged(Service);
-
 
                     if (
                             (Controller.Cloud.Cluster!=null) &&

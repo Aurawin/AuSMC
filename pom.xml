@@ -6,7 +6,7 @@
 
     <groupId>com.aurawin.scs</groupId>
     <artifactId>smc</artifactId>
-    <version>2018.5.9.1</version>
+    <version>2018.5.15.1</version>
     <name>AuSMC</name>
     <scm>
         <connection>scm:svn:http://127.0.0.1/dummy</connection>
@@ -41,12 +41,12 @@
         <dependency>
             <groupId>com.aurawin</groupId>
             <artifactId>core</artifactId>
-            <version>2018.5.9.1</version>
+            <version>2018.5.15.1</version>
         </dependency>
         <dependency>
             <groupId>com.aurawin</groupId>
             <artifactId>scs</artifactId>
-            <version>2018.5.14.3</version>
+            <version>2018.5.15.2</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
