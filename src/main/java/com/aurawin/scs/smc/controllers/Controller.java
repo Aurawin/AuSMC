@@ -1,17 +1,14 @@
-package com.aurawin.scs.smc;
+package com.aurawin.scs.smc.controllers;
 
 
 
 import com.aurawin.core.lang.Database;
 import com.aurawin.core.stored.Manifest;
-import com.aurawin.scs.smc.controllers.Domains;
-import com.aurawin.scs.smc.controllers.Settings;
 import com.aurawin.scs.smc.views.*;
 import com.aurawin.scs.solution.Table;
 import com.aurawin.scs.stored.Entities;
 import com.aurawin.scs.smc.models.SettingsModel;
 import com.aurawin.scs.stored.bootstrap.Bootstrap;
-import com.aurawin.scs.stored.cloud.Group;
 import com.aurawin.scs.stored.cloud.Resource;
 import com.aurawin.scs.stored.cloud.Service;
 
@@ -42,6 +39,7 @@ public class Controller {
         public static ResourceBundle Domain;
         public static ResourceBundle Clustering;
         public static ResourceBundle Settings;
+        public static ResourceBundle Security;
     }
 
     public static final ArrayList<JFrame> Frames = new ArrayList<>();
@@ -60,6 +58,7 @@ public class Controller {
     public static viewMain mainView;
     public static viewDialog dialogView;
     public static viewSettings settingsView;
+    public static viewSecurity securityView;
 
     public static void setDialogView(){
         frameDialog.getContentPane().add(dialogView.mainPanel);
@@ -127,13 +126,32 @@ public class Controller {
 
 
     }
+    public static void swapSecurityView(){
+        clusteringView.clearView();
+        securityView.loadViews();
+
+        frameMain.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        JPanel contentPane = (JPanel) frameMain.getContentPane();
+        Dimension d = frameMain.getSize();
+        contentPane.remove(settingsView.mainPanel);
+        contentPane.remove(clusteringView.mainPanel);
+        contentPane.remove(domainView.mainPanel);
+        contentPane.add(securityView.mainPanel);
+
+        frameMain.pack();
+        frameMain.setSize(d);
+
+
+    }
     public static void swapSettingsView(){
+
         clusteringView.clearView();
         settingsView.refreshViews();
 
         frameMain.setDefaultCloseOperation(EXIT_ON_CLOSE);
         JPanel contentPane = (JPanel) frameMain.getContentPane();
         Dimension d = frameMain.getSize();
+        contentPane.remove(securityView.mainPanel);
         contentPane.remove(clusteringView.mainPanel);
         contentPane.remove(domainView.mainPanel);
         contentPane.add(settingsView.mainPanel);
@@ -147,6 +165,7 @@ public class Controller {
         frameMain.setDefaultCloseOperation(EXIT_ON_CLOSE);
         JPanel contentPane = (JPanel) frameMain.getContentPane();
         Dimension d = frameMain.getSize();
+        contentPane.remove(securityView.mainPanel);
         contentPane.remove(settingsView.mainPanel);
         contentPane.remove(clusteringView.mainPanel);
         contentPane.add(domainView.mainPanel);
@@ -157,6 +176,7 @@ public class Controller {
         frameMain.setDefaultCloseOperation(EXIT_ON_CLOSE);
         JPanel contentPane = (JPanel) frameMain.getContentPane();
         Dimension d = frameMain.getSize();
+        contentPane.remove(securityView.mainPanel);
         contentPane.remove(settingsView.mainPanel);
         contentPane.remove(domainView.mainPanel);
         contentPane.add(clusteringView.mainPanel);
@@ -234,6 +254,7 @@ public class Controller {
         Controller.Lang.Domain = ResourceBundle.getBundle("domain",Locale.getDefault());
         Controller.Lang.Clustering = ResourceBundle.getBundle("clustering",Locale.getDefault());
         Controller.Lang.Settings=ResourceBundle.getBundle("settings",Locale.getDefault());
+        Controller.Lang.Security=ResourceBundle.getBundle("security",Locale.getDefault());
 
         frameMain = new JFrame("mainPanel");
         Frames.add(frameMain);
@@ -250,6 +271,7 @@ public class Controller {
         domainView = new viewDomain();
         settingsView= new viewSettings();
         clusteringView = new viewClustering();
+        securityView = new viewSecurity();
 
         setupLoginForm();
         setDomainView();

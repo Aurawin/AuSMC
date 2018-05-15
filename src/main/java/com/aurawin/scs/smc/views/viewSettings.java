@@ -2,14 +2,12 @@ package com.aurawin.scs.smc.views;
 
 import com.aurawin.core.gui.JTextFieldListener;
 import com.aurawin.core.rsr.IpHelper;
-import com.aurawin.scs.smc.Controller;
+import com.aurawin.scs.smc.controllers.Controller;
 import com.aurawin.scs.smc.models.ContentTypeTableModel;
 import com.aurawin.scs.smc.models.DNSTableModel;
 import com.aurawin.scs.stored.ContentType;
 import com.aurawin.scs.stored.DNS;
 import com.aurawin.scs.stored.Entities;
-import com.aurawin.scs.stored.cloud.Group;
-import org.hibernate.annotations.Cascade;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -79,6 +77,7 @@ public class viewSettings {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Controller.swapDomainView();
+
             }
         });
         btnClustering.addActionListener(new ActionListener() {
@@ -236,6 +235,12 @@ public class viewSettings {
                     DNS d = dnsTableModel.getDNS(idx);
                     dnsTableModel.hostDeleted(d);
                 }
+            }
+        });
+        btnSecurity.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Controller.swapSecurityView();
             }
         });
     }

@@ -1,9 +1,8 @@
 package com.aurawin.scs.smc.models;
 
 import com.aurawin.core.rsr.IpHelper;
-import com.aurawin.scs.smc.Controller;
+import com.aurawin.scs.smc.controllers.Controller;
 import com.aurawin.scs.smc.JTableHelper;
-import com.aurawin.scs.stored.ContentType;
 import com.aurawin.scs.stored.DNS;
 import com.aurawin.scs.stored.Entities;
 

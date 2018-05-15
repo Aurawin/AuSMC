@@ -7,7 +7,7 @@ import com.aurawin.core.solution.Namespace;
 import com.aurawin.core.solution.Settings;
 import com.aurawin.core.stored.entities.security.Certificate;
 import com.aurawin.core.stream.MemoryStream;
-import com.aurawin.scs.smc.Controller;
+import com.aurawin.scs.smc.controllers.Controller;
 import com.aurawin.scs.smc.Package;
 import com.aurawin.scs.smc.controllers.DialogCompletion;
 import com.aurawin.scs.smc.controllers.Domains;
@@ -637,6 +637,12 @@ public class viewDomain{
             @Override
             public void actionPerformed(ActionEvent e) {
                 Controller.swapSettingsView();
+            }
+        });
+        btnSecurity.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Controller.swapSecurityView();
             }
         });
     }

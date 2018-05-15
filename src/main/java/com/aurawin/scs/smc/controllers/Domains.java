@@ -1,16 +1,10 @@
 package com.aurawin.scs.smc.controllers;
 
-import com.aurawin.core.file.OpenFileFilter;
-import com.aurawin.core.file.SystemDialog;
-import com.aurawin.scs.smc.Controller;
 import com.aurawin.scs.stored.Entities;
 import com.aurawin.scs.stored.domain.Domain;
 import com.aurawin.scs.stored.domain.KeyValue;
 
-import javax.naming.ldap.Control;
-import java.security.KeyPair;
 import java.util.ArrayList;
-import java.util.Set;
 
 import static com.aurawin.core.stored.entities.Entities.CascadeOff;
 

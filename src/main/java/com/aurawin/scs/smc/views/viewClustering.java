@@ -1,8 +1,7 @@
 package com.aurawin.scs.smc.views;
 
 import com.aurawin.core.gui.JTextFieldListener;
-import com.aurawin.scs.smc.Controller;
-import com.aurawin.scs.smc.JTableHelper;
+import com.aurawin.scs.smc.controllers.Controller;
 import com.aurawin.scs.smc.controllers.ClusterTimer;
 import com.aurawin.scs.smc.controllers.DialogCompletion;
 import com.aurawin.scs.smc.controllers.OnDialogCompletion;
@@ -14,7 +13,6 @@ import com.aurawin.scs.stored.domain.Domain;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -628,6 +626,12 @@ public class viewClustering {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Controller.swapSettingsView();
+            }
+        });
+        btnSecurity.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Controller.swapSecurityView();
             }
         });
     }

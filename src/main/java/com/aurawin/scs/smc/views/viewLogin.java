@@ -2,7 +2,7 @@ package com.aurawin.scs.smc.views;
 
 import com.aurawin.core.gui.JTextFieldListener;
 import com.aurawin.core.solution.Table;
-import com.aurawin.scs.smc.Controller;
+import com.aurawin.scs.smc.controllers.Controller;
 import com.aurawin.scs.smc.controllers.DialogCompletion;
 import com.aurawin.scs.smc.controllers.OnDialogCompletion;
 

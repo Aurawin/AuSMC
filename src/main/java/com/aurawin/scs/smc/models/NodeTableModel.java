@@ -1,9 +1,8 @@
 package com.aurawin.scs.smc.models;
 
-import com.aurawin.scs.smc.Controller;
+import com.aurawin.scs.smc.controllers.Controller;
 import com.aurawin.scs.smc.JTableHelper;
 import com.aurawin.scs.stored.Entities;
-import com.aurawin.scs.stored.cloud.Group;
 import com.aurawin.scs.stored.cloud.Node;
 import com.aurawin.scs.stored.cloud.Resource;
 
@@ -11,7 +10,6 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.util.ArrayList;
-import java.util.List;
 
 import static com.aurawin.core.stored.entities.Entities.CascadeOff;
 

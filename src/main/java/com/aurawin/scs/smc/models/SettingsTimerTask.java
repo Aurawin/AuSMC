@@ -1,6 +1,6 @@
 package com.aurawin.scs.smc.models;
 
-import com.aurawin.scs.smc.Controller;
+import com.aurawin.scs.smc.controllers.Controller;
 
 import java.util.TimerTask;
 

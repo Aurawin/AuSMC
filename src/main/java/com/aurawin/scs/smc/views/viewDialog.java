@@ -1,17 +1,14 @@
 package com.aurawin.scs.smc.views;
 
-import com.aurawin.scs.smc.Controller;
+import com.aurawin.scs.smc.controllers.Controller;
 import com.aurawin.scs.smc.Package;
 import com.aurawin.scs.smc.controllers.DialogCompletion;
 import com.aurawin.scs.smc.controllers.OnDialogCompletion;
 
 import javax.swing.*;
 import java.awt.event.*;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
-import static com.aurawin.scs.smc.Controller.dialogView;
-import static com.aurawin.scs.smc.Controller.frameDialog;
+import static com.aurawin.scs.smc.controllers.Controller.frameDialog;
 
 public class viewDialog {
     private JButton btnCancel;
